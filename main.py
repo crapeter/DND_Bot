@@ -8,7 +8,7 @@ import uuid
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
 client = pymongo.MongoClient(
-    "mongodb+srv://crapeter:MongoDB0422%21@cluster0.pb7fxj4.mongodb.net/?retryWrites=true&w=majority"
+    "mongodb+srv://<username>:<password>@cluster0.pb7fxj4.mongodb.net/?retryWrites=true&w=majority"
 )
 db = client.DND
 character_collections = db.Characters
@@ -352,4 +352,4 @@ async def check(ctx, character_id, check_type):
         await ctx.send(f"No character found with ID: {character_id}")
 
 
-bot.run('MTE3MjMzMzY5NDcyNDM0MTgyMg.GrfB1D.rYTcIrO9LggkvEwo9KzZZYAKojoZ_17uAKEYMA')
+bot.run('//bot_token_here')
