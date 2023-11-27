@@ -19,13 +19,21 @@ async def on_ready():
     print(f'Logged in as {bot.user.name}')
 
 
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user.name}')
+    roll_or_die = bot.get_channel(1171843834699845632)
+    if roll_or_die:
+        await roll_or_die.send("Your God has awakened")
+
+
 @bot.command()
 async def cheatsheet(ctx):
     command_list = []
     for command in bot.commands:
         if command.brief:
             command_list.append(f"**{command.name}**: {command.brief}")
-    help_message = "\n".join(command_list)
+    help_message = "\n\n".join(command_list)
     await ctx.send(f"Available commands:\n{help_message}")
 
 
@@ -212,12 +220,25 @@ async def roll(ctx, dice_value, bonus_dmg=0):
 
     rolls = [random.randint(1, num_sides) for _ in range(num_dice)]
     total_roll = sum(rolls)
+    if num_dice == 1 and num_sides == 20:
+        if rolls[0] == 20:
+            await ctx.send("Your God has chosen to be gracious")
+        if rolls[0] == 2:
+            await ctx.send("Your God has chosen to be merciful")
+        if rolls[0] == 1:
+            await ctx.send("Your God has chosen to smite you")
     await ctx.send(f"Rolling {dice_value}: {', '.join(map(str, rolls))}.\nTotal: {total_roll + int(bonus_dmg)}")
 
 
 @bot.command(brief="Input: plus to hit\nIf no bonus to hit, don't put anything")
 async def tohit(ctx, bonus=0):
     random_number = random.randint(1, 20) + int(bonus)
+    if random_number - int(bonus) == 20:
+        await ctx.send("Your God has chosen to be gracious")
+    if random_number - int(bonus) == 2:
+        await ctx.send("Your God has chosen to be merciful")
+    if random_number - int(bonus) == 1:
+        await ctx.send("Your God has chosen to smite you")
     await ctx.send(f"The initial roll is: {random_number - int(bonus)}\nThe attack roll is: {random_number}")
 
 
@@ -418,14 +439,32 @@ async def roll_adv_dis(ctx, modifier, adv):
     rand1 = random.randint(1, 20) + int(modifier)
     rand2 = random.randint(1, 20) + int(modifier)
     if adv:
+        if rand1 > rand2 and rand1 - int(modifier) == 20 or rand2 > rand1 and rand2 - int(modifier) == 20:
+            await ctx.send("Your God has chosen to be gracious")
+        if rand1 > rand2 and rand1 - int(modifier) == 2 or rand2 > rand1 and rand2 - int(modifier) == 2:
+            await ctx.send("Your God has chosen to be merciful")
+        if rand1 > rand2 and rand1 - int(modifier) == 1 or rand2 > rand1 and rand2 - int(modifier) == 1:
+            await ctx.send("Your God has chosen to smite you")
         await ctx.send(f"\nThe first roll is: {rand1 - int(modifier)}\nThe second roll is: {rand2 - int(modifier)}\nThe final roll is: {rand1 if rand1 > rand2 else rand2}")
     else:
+        if rand1 < rand2 and rand1 - int(modifier) == 20 or rand2 < rand1 and rand2 - int(modifier) == 20:
+            await ctx.send("Your God has chosen to be gracious")
+        if rand1 < rand2 and rand1 - int(modifier) == 2 or rand2 < rand1 and rand2 - int(modifier) == 2:
+            await ctx.send("Your God has chosen to be merciful")
+        if rand1 < rand2 and rand1 - int(modifier) == 1 or rand2 < rand1 and rand2 - int(modifier) == 1:
+            await ctx.send("Your God has chosen to smite you")
         await ctx.send(f"\nThe first roll is: {rand1 - int(modifier)}\nThe second roll is: {rand2 - int(modifier)}\nThe final roll is: {rand1 if rand1 < rand2 else rand2}")
 
 
 async def roll_check(ctx, check_type, modifier):
     roll_result = random.randint(1, 20)
     total_check = roll_result + int(modifier)
+    if roll_result == 20:
+        await ctx.send("Your God has chosen to be gracious")
+    if roll_result == 2:
+        await ctx.send("Your God has chosen to merciful")
+    if roll_result == 1:
+        await ctx.sent("Your God has chosen to smite you")
     await ctx.send(f"The d20 roll for {check_type} is: {roll_result}")
     await ctx.send(f"The total {check_type} check is: {total_check}")
 
