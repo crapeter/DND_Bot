@@ -3,8 +3,4 @@ DND_bot that provides most of the functionality needed to play dnd online, if ne
 
 Ensure you have python installed and run the following pip commands:
 
-pip install discord.py
-
-//pip install discord.py[bot]
-
-pip install pymongo
+pip install -r requirements.txt
