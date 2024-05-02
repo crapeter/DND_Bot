@@ -3,9 +3,8 @@ from discord.ext import commands
 import pymongo
 import random
 import re
-import uuid
 
-bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
+bot = commands.Bot(command_prefix='/', intents=discord.Intents.all())
 
 client = pymongo.MongoClient(
     "mongodb+srv://<username>:<password>@cluster0.pb7fxj4.mongodb.net/?retryWrites=true&w=majority"
@@ -22,7 +21,7 @@ async def on_ready():
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
-    # roll_or_die = bot.get_channel(1171843834699845632)
+    # roll_or_die = bot.get_channel(discord channel id)
     # if roll_or_die:
         # await roll_or_die.send("Your God has awakened")
 
@@ -37,169 +36,202 @@ async def cheatsheet(ctx):
     await ctx.send(f"Available commands:\n{help_message}")
 
 
-@bot.command(brief="Creates a character\nInputs: name level strength dex con intelligence wisdom charisma sanity proficiency bonus")
-async def createcharacter(ctx, name, level, strength, dex, con, intel, wisdom, rizz, san, probo):
-    if not level or not name or not strength or not dex or not con or not intel or not wisdom or not rizz or not san or not probo:
-        await ctx.send(
-            "Please provide all the required information: `!createcharacter [name] [strength] [dex] [constitution] [intelligence] [wisdom] [charisma] [sanity] [proficiency bonus]`"
-        )
-        return
+@bot.command(brief="Creates a character\nInputs: name")
+async def createcharacter(ctx, name):
+    if not name:
+        await ctx.send("Please give your character a name")
 
-    character_id = str(uuid.uuid4())
     character_data = {
-        "_id": character_id,
         "name": name,
-        "level": level,
-        "strength": strength,
-        "dex": dex,
-        "con": con,
-        "int": intel,
-        "wisdom": wisdom,
-        "charisma": rizz,
-        "sanity": san,
-        "pb": probo,
-        "strength_save": '0',
-        "dex_save": '0',
-        "con_save": '0',
-        "intelligence_save": '0',
-        "wisdom_save": '0',
-        "charisma_save": '0',
-        "sanity_save": '0',
-        "acrobatics": '0',
-        "animal_handling": '0',
-        "arcana": '0',
-        "athletics": '0',
-        "deception": '0',
-        "history": '0',
-        "insight": '0',
-        "intimidation": '0',
-        "investigation": '0',
-        "medicine": '0',
-        "nature": '0',
-        "perception": '0',
-        "performance": '0',
-        "persuasion": '0',
-        "religion": '0',
-        "slight_of_hand": '0',
-        "stealth": '0',
-        "survival": '0',
-        "marshall": '0',
+        "level": 1,
+        "strength": 0,
+        "dex": 0,
+        "con": 0,
+        "int": 0,
+        "wisdom": 0,
+        "charisma": 0,
+        "pb": 0,
+        "strength_save": 0,
+        "dex_save": 0,
+        "con_save": 0,
+        "intelligence_save": 0,
+        "wisdom_save": 0,
+        "charisma_save": 0,
+        "acrobatics": 0,
+        "animal_handling": 0,
+        "arcana": 0,
+        "athletics": 0,
+        "deception": 0,
+        "history": 0,
+        "insight": 0,
+        "intimidation": 0,
+        "investigation": 0,
+        "medicine": 0,
+        "nature": 0,
+        "perception": 0,
+        "performance": 0,
+        "persuasion": 0,
+        "religion": 0,
+        "slight_of_hand": 0,
+        "stealth": 0,
+        "survival": 0,
     }
+    character_collections.insert_one(character_data)
+    await ctx.send(f"{name} has been created")
 
-    result = db.insert_one(character_data)
-    await ctx.send(f"Character {name} created with ID: {result.character_id}")
 
+async def get_character(ctx):
+    user = ctx.message.author.name
 
-@bot.command(brief="Sets a character saving throws\nInput: character id strength dex con intelligence wisdom charisma sanity")
-async def setsavingthrows(ctx, character_id, strength, dex, con, intelligence, wisdom, charisma, sanity):
-    if not character_id or not strength or not dex or not con or not intelligence or not wisdom or not charisma or not sanity:
-        await ctx.send(
-            "Please provide all required information: `[character id] [strength save] [dex save] [con save] [intelligence save] [wisdom save] [charisma save] [sanity save]"
-        )
-        return
+    match user:
+        case "discord name":
+            character = character_collections.find_one({"name": "Zaeed"})
+        case "discord name":
+            character = character_collections.find_one({"name": "Takahiro"})
+        case "discord name":
+            character = character_collections.find_one({"name": "Corvix"})
+        case "discord name":
+            character = character_collections.find_one({"name": "DM"})
+        case _:
+            return
 
-    character = character_collections.find_one({"_id": character_id})
+    return character
+
+async def set_stat(ctx, stat, stat_name, value):
+    character = await get_character(ctx)
     if character:
-        character_collections.update_one({"_id": character_id}, {"strength save": strength})
-        character_collections.update_one({"_id": character_id}, {"dex save": dex})
-        character_collections.update_one({"_id": character_id}, {"con save": con})
-        character_collections.update_one({"_id": character_id}, {"int save": intelligence})
-        character_collections.update_one({"_id": character_id}, {"wisdom save": wisdom})
-        character_collections.update_one({"_id": character_id}, {"charisma save": charisma})
-        character_collections.update_one({"_id": character_id}, {"sanity save": sanity})
+        character_collections.update_one({"name": character['name']}, {"$set": {stat: value}})
+        await ctx.send(f"{character['name']}'s {stat_name} updated")
     else:
-        await ctx.send(
-            "Character not found. Use the `!getcharacterid [character name]` command to get the id's of all the characters with that name."
-        )
+        await ctx.send(f"{ctx.message.author.name} does not have an active PC")
 
+@bot.command(brief="Sets your character level\n\tInput: level")
+async def setlvl(ctx, save = 0):
+    await set_stat(ctx, "level", "level", save)
 
-@bot.command(brief="Sets the character skills\nInputs: character id acrobatics animal handling arcana ... alphabetical order")
-async def setskills(ctx, character_id, acro, animal, arc, athl, dece, hist, insi, inti, inve, medi, natu, perc, perf,
-                    pers, reli, soh, stea, surv, marsh):
-    if not character_id or not acro or not animal or not arc or not athl or not dece or not hist or not insi or not inti or not inve or not medi or not natu or not perc or not perf or not pers or not reli or not soh or not stea or not surv or not marsh:
-        ctx.send(
-            "Please provide all required information: `[character id] [acrobatics] [animal handling] [arcana] [athletics] [deception] [history] [insight] [intimidation] [investigation] [medicine] [nature] [perception] [performance] [persuasion] [religion] [slight of hand] [stealth] [survival]`"
-        )
-        return
+@bot.command(brief="Sets your strength\n\tInput: stat value")
+async def setstr(ctx, save = 0):
+    await set_stat(ctx, "strength", "strength", save)
 
-    character = character_collections.find_one({"_id": character_id})
-    if character:
-        character_collections.update_one({"_id": character_id}, {"acrobatics": acro})
-        character_collections.update_one({"_id": character_id}, {"animal handling": animal})
-        character_collections.update_one({"_id": character_id}, {"arcana": arc})
-        character_collections.update_one({"_id": character_id}, {"athletics": athl})
-        character_collections.update_one({"_id": character_id}, {"deception": dece})
-        character_collections.update_one({"_id": character_id}, {"history": hist})
-        character_collections.update_one({"_id": character_id}, {"insight": insi})
-        character_collections.update_one({"_id": character_id}, {"intimidation": inti})
-        character_collections.update_one({"_id": character_id}, {"investigation": inve})
-        character_collections.update_one({"_id": character_id}, {"medicine": medi})
-        character_collections.update_one({"_id": character_id}, {"nature": natu})
-        character_collections.update_one({"_id": character_id}, {"perception": perc})
-        character_collections.update_one({"_id": character_id}, {"performance": perf})
-        character_collections.update_one({"_id": character_id}, {"persuasion": pers})
-        character_collections.update_one({"_id": character_id}, {"religion": reli})
-        character_collections.update_one({"_id": character_id}, {"slight of hand": soh})
-        character_collections.update_one({"_id": character_id}, {"stealth": stea})
-        character_collections.update_one({"_id": character_id}, {"survival": surv})
-        character_collections.update_one({"_id": character_id}, {"marshall": marsh})
-    else:
-        await ctx.send(
-            "Character not found. Use the `!getcharacterid [character name]` command to get the id's of all the characters with that name."
-        )
+@bot.command(brief="Sets your dex\n\tInput: stat value")
+async def setdex(ctx, save = 0):
+    await set_stat(ctx, "dex", "dex", save)
 
+@bot.command(brief="Sets your con\n\tInput: stat value")
+async def setcon(ctx, save = 0):
+    await set_stat(ctx, "con", "con", save)
 
-@bot.command(brief="Gets a characters id by name\nInputs: character name")
-async def getcharacterid(ctx, character_name):
-    characters = character_collections.find({'name': character_name})
-    for character in characters:
-        await ctx.send(f"The ID for {character_name} is: {character['_id']}")
-    if characters.count() == 0:
-        await ctx.send(f"No characters found with the name: {character_name}")
+@bot.command(brief="Sets your intelligence\n\tInput: stat value")
+async def setint(ctx, save = 0):
+    await set_stat(ctx, "int", "intelligence", save)
 
+@bot.command(brief="Sets your wisdom\n\tInput: stat value")
+async def setwis(ctx, save = 0):
+    await set_stat(ctx, "wisdom", "wisdom", save)
 
-@bot.command(brief="Gets a character's stats.\nInput: character id")
-async def getstats(ctx, character_id):
-    character = character_collections.find_one({"_id": character_id})
-    if character:
-        formatted_stats = "\n".join([f"{key}: {value}" for key, value in character.items()])
-        await ctx.send(f"Stats for character with ID `{character_id}`:\n{formatted_stats}")
-    else:
-        await ctx.send(f"No character found with ID: {character_id}")
+@bot.command(brief="Sets your charisma\n\tInput: stat value")
+async def setcha(ctx, save = 0):
+    await set_stat(ctx, "charisma", "charisma", save)
 
+@bot.command(brief="Sets your proficiency bonus\n\tInput: stat value")
+async def setpro(ctx, save = 0):
+    await set_stat(ctx, "pb", "proficiency bonus", save)
 
-@bot.command(brief="Updates a character's stats.\nInput: character id, stat name, new value")
-async def updatestat(ctx, character_id, stat, value):
-    if not character_id or not stat or not value:
-        await ctx.send(
-            "Please provide all the required information: `!updatestat [character id] [name] [stat] [value]`"
-        )
-        return
+@bot.command(brief="Sets your strength save\n\tInput: save value")
+async def setstrsave(ctx, save = 0):
+    await set_stat(ctx, "strength_save", "strength save", save)
 
-    try:
-        value = int(value)
-    except ValueError:
-        await ctx.send("Invalid stat value")
-        return
+@bot.command(brief="Sets your dex save\n\tInput: save value")
+async def setdexsave(ctx, save = 0):
+    await set_stat(ctx, "dex_save", "dex save", save)
 
-    character = character_collections.find_one({"_id": character_id})
-    if character:
-        if stat in character:
-            character[stat] = value
-            character_collections.update_one({"_id": character_id}, {"$set": {stat: value}})
-            await ctx.send(f"Updated {stat} for character {character['name']} to {value}")
-        else:
-            await ctx.send(f"Stat {stat} does not exist for this character.")
-    else:
-        await ctx.send(
-            "Character not found. Use the `!getcharacterid [character name]` command to get the id's of all the characters with that name."
-        )
+@bot.command(brief="Sets your con save\n\tInput: save value")
+async def setconsave(ctx, save = 0):
+    await set_stat(ctx, "con_save", "con save", save)
 
+@bot.command(brief="Sets your int save\n\tInput: save value")
+async def setintsave(ctx, save = 0):
+    await set_stat(ctx, "intelligence_save", "intelligence save", save)
 
-@bot.command(brief="Shatters the glass blade")
-async def shatter(ctx):
-    shatter_roll = random.randint(1, 12)
-    await ctx.send(f"The shatter roll is: {shatter_roll}")
+@bot.command(brief="Sets your wisdom save\n\tInput: save value")
+async def setwissave(ctx, save = 0):
+    await set_stat(ctx, "wisdom_save", "wisdom save", save)
+
+@bot.command(brief="Sets your charisma save\n\tInput: save value")
+async def setchasave(ctx, save = 0):
+    await set_stat(ctx, "charisma_save", "charisma save", save)
+
+@bot.command(brief="Sets your acrobatics stat\n\tInput: save value")
+async def setacro(ctx, save = 0):
+    await set_stat(ctx, "acrobatics", "acrobatics", save)
+
+@bot.command(brief="Sets your animal handling stat\n\tInput: save value")
+async def setah(ctx, save = 0):
+    await set_stat(ctx, "animal_handling", "animal handling", save)
+
+@bot.command(brief="Sets your arcana stat\n\tInput: save value")
+async def setarc(ctx, save = 0):
+    await set_stat(ctx, "arcana", "arcana", save)
+
+@bot.command(brief="Sets your athletics stat\n\tInput: save value")
+async def setath(ctx, save = 0):
+    await set_stat(ctx, "athletics", "athletics", save)
+
+@bot.command(brief="Sets your deception stat\n\tInput: save value")
+async def setdec(ctx, save = 0):
+    await set_stat(ctx, "deception", "deception", save)
+
+@bot.command(brief="Sets your history stat\n\tInput: save value")
+async def sethis(ctx, save = 0):
+    await set_stat(ctx, "history", "history", save)
+
+@bot.command(brief="Sets your insight stat\n\tInput: save value")
+async def setins(ctx, save = 0):
+    await set_stat(ctx, "insight", "insight", save)
+
+@bot.command(brief="Sets your intimidation stat\n\tInput: save value")
+async def setintim(ctx, save = 0):
+    await set_stat(ctx, "intimidation", "intimidation", save)
+
+@bot.command(brief="Sets your investigation stat\n\tInput: save value")
+async def setinv(ctx, save = 0):
+    await set_stat(ctx, "investigation", "investigation", save)
+
+@bot.command(brief="Sets your medicine stat\n\tInput: save value")
+async def setmed(ctx, save = 0):
+    await set_stat(ctx, "medicine", "medicine", save)
+
+@bot.command(brief="Sets your nature stat\n\tInput: save value")
+async def setnat(ctx, save = 0):
+    await set_stat(ctx, "nature", "nature", save)
+
+@bot.command(brief="Sets your perception stat\n\tInput: save value")
+async def setperc(ctx, save = 0):
+    await set_stat(ctx, "perception", "perception", save)
+
+@bot.command(brief="Sets your persuasion stat\n\tInput: save value")
+async def setpers(ctx, save = 0):
+    await set_stat(ctx, "persuasion", "persuasion", save)
+
+@bot.command(brief="Sets your performance stat\n\tInput: save value")
+async def setperf(ctx, save = 0):
+    await set_stat(ctx, "performance", "performance", save)
+
+@bot.command(brief="Sets your religion stat\n\tInput: save value")
+async def setrel(ctx, save = 0):
+    await set_stat(ctx, "religion", "religion", save)
+
+@bot.command(brief="Sets your slight of hand stat\n\tInput: save value")
+async def setsoh(ctx, save = 0):
+    await set_stat(ctx, "slight_of_hand", "slight of hand", save)
+
+@bot.command(brief="Sets your stealth stat\n\tInput: save value")
+async def setste(ctx, save = 0):
+    await set_stat(ctx, "stealth", "stealth", save)
+
+@bot.command(brief="Sets your survival stat\n\tInput: save value")
+async def setsur(ctx, save = 0):
+    await set_stat(ctx, "survival", "survival", save)
 
 
 @bot.command(brief="Rolls a dice\nInputs: 3d8/100d20 bonus(+2)\nIf no bonus, don't put anything")
@@ -256,50 +288,36 @@ async def ratk(ctx, dice_value, bonus=0, adv=0):
         await ctx.send(f"Initial Rolls:\t {first_rolls}\nFinal Rolls with bonuses:\t {final_rolls}")
 
 
-@bot.command(brief="Input: plus to hit\nIf no bonus to hit, don't put anything")
-async def tohit(ctx, bonus=0):
-    random_number = random.randint(1, 20) + int(bonus)
-    if random_number - int(bonus) == 20:
-        await ctx.send("Your God has chosen to be gracious")
-    if random_number - int(bonus) == 2:
-        await ctx.send("Your God has chosen to be merciful")
-    if random_number - int(bonus) == 1:
-        await ctx.send("Your God has chosen to smite you")
-    await ctx.send(f"The initial roll is: {random_number - int(bonus)}\nThe attack roll is: {random_number}")
-
-
 @bot.command(brief="Input: character id, type of roll")
-async def advantage(ctx, character_id, roll_type):
-    if not character_id or not roll_type:
+async def advantage(ctx, roll_type):
+    user = ctx.message.author.name
+    if not roll_type:
         await ctx.send("Please provide all required information: `[character_id] [type of save]`")
         return
 
-    character = character_collections.find_one({"_id": character_id})
+    character = await get_character(ctx)
     if character:
         await ctx.send(f"{character['name']}")
         match roll_type:
-            case 'strength_save':
+            case 'ssave':
                 modifier = int(character['strength_save'])
                 await roll_adv_dis(ctx, modifier, True)
-            case 'dex_save':
+            case 'dsave':
                 modifier = int(character['dex_save'])
                 await roll_adv_dis(ctx, modifier, True)
-            case 'con_save':
+            case 'csave':
                 modifier = int(character['con_save'])
                 await roll_adv_dis(ctx, modifier, True)
-            case 'int_save':
+            case 'isave':
                 modifier = int(character['intelligence_save'])
                 await roll_adv_dis(ctx, modifier, True)
-            case 'wisdom_save':
+            case 'wsave':
                 modifier = int(character['wisdom_save'])
                 await roll_adv_dis(ctx, modifier, True)
-            case 'charisma_save':
+            case 'chsave':
                 modifier = int(character['charisma_save'])
                 await roll_adv_dis(ctx, modifier, True)
-            case 'sanity_save':
-                modifier = int(character['sanity_save'])
-                await roll_adv_dis(ctx, modifier, True)
-            case 'strength':
+            case 'str':
                 modifier = (int(character['strength']) - 10) // 2
                 await roll_adv_dis(ctx, modifier, True)
             case 'dex':
@@ -311,91 +329,84 @@ async def advantage(ctx, character_id, roll_type):
             case 'int':
                 modifier = (int(character['int']) - 10) // 2
                 await roll_adv_dis(ctx, modifier, True)
-            case 'wisdom':
+            case 'wis':
                 modifier = (int(character['wisdom']) - 10) // 2
                 await roll_adv_dis(ctx, modifier, True)
-            case 'charisma':
+            case 'char':
                 modifier = (int(character['charisma']) - 10) // 2
                 await roll_adv_dis(ctx, modifier, True)
-            case 'sanity':
-                modifier = (int(character['sanity']) - 10) // 2
-                await roll_adv_dis(ctx, modifier, True)
-            case 'acrobatics':
+            case 'acro':
                 await roll_adv_dis(ctx, character['acrobatics'], True)
-            case 'animal_handling':
+            case 'animal':
                 await roll_adv_dis(ctx, character['animal_handling'], True)
-            case 'arcana':
+            case 'arc':
                 await roll_adv_dis(ctx, character['arcana'], True)
-            case 'athletics':
+            case 'ath':
                 await roll_adv_dis(ctx, character['athletics'], True)
-            case 'deception':
+            case 'dec':
                 await roll_adv_dis(ctx, character['deception'], True)
-            case 'history':
+            case 'his':
                 await roll_adv_dis(ctx, character['history'], True)
-            case 'insight':
+            case 'ins':
                 await roll_adv_dis(ctx, character['insight'], True)
-            case 'intimidation':
+            case 'intimi':
                 await roll_adv_dis(ctx, character['intimidation'], True)
-            case 'investigation':
+            case 'inv':
                 await roll_adv_dis(ctx, character['investigation'], True)
-            case 'medicine':
+            case 'med':
                 await roll_adv_dis(ctx, character['medicine'], True)
-            case 'nature':
+            case 'nat':
                 await roll_adv_dis(ctx, character['nature'], True)
-            case 'perception':
+            case 'perc':
                 await roll_adv_dis(ctx, character['perception'], True)
-            case 'performance':
+            case 'perf':
                 await roll_adv_dis(ctx, character['performance'], True)
-            case 'persuasion':
+            case 'pers':
                 await roll_adv_dis(ctx, character['persuasion'], True)
-            case 'religion':
+            case 'rel':
                 await roll_adv_dis(ctx, character['religion'], True)
-            case 'slight_of_hand':
+            case 'soh':
                 await roll_adv_dis(ctx, character['slight_of_hand'], True)
             case 'stealth':
                 await roll_adv_dis(ctx, character['stealth'], True)
-            case 'survival':
+            case 'sur':
                 await roll_adv_dis(ctx, character['survival'], True)
-            case 'marshall':
-                await roll_adv_dis(ctx, character['marshall'], True)
             case _:
-                await ctx.send("Types of saves/checks are: 'strength_save' 'dex_save' 'con_save' 'int_save' 'wisdom_save' 'charisma_save' 'sanity_save' 'strength' 'dex' 'con' 'int' 'wisdom' 'charisma' 'sanity' 'acrobatics' 'animal_handling' 'arcana' 'athletics' 'deception' 'history' 'insight' 'intimidation' 'investigation' 'medicine' 'nature' 'perception' 'performance' 'persuasion' 'religion' 'slight_of_hand' 'stealth' 'survival' 'marshall'")
+                await ctx.send("Types of saves/checks are: 'strength_save' 'dex_save' 'con_save' 'int_save' 'wisdom_save' 'charisma_save' 'sanity_save' 'strength' 'dex' 'con' 'int' 'wisdom' 'charisma' 'sanity' 'acrobatics' 'animal_handling' 'arcana' 'athletics' 'deception' 'history' 'insight' 'intimidation' 'investigation' 'medicine' 'nature' 'perception' 'performance' 'persuasion' 'religion' 'slight_of_hand' 'stealth' 'survival'")
     else:
-        await ctx.send(f"No character found with ID: {character_id}")
+        await ctx.send(f"{user} does not have a current PC")
 
 
 @bot.command(brief="Input: character id, type of roll")
-async def disadvantage(ctx, character_id, roll_type):
-    if not character_id or not roll_type:
+async def disadvantage(ctx, roll_type):
+    user = ctx.message.author.name
+    if not roll_type:
         await ctx.send("Please provide all required information: `[character_id] [type of save]`")
         return
 
-    character = character_collections.find_one({"_id": character_id})
+    character = await get_character(ctx)
     if character:
         await ctx.send(f"{character['name']}")
         match roll_type:
-            case 'strength_save':
+            case 'ssave':
                 modifier = int(character['strength_save'])
                 await roll_adv_dis(ctx, modifier, False)
-            case 'dex_save':
+            case 'dsave':
                 modifier = int(character['dex_save'])
                 await roll_adv_dis(ctx, modifier, False)
-            case 'con_save':
+            case 'csave':
                 modifier = int(character['con_save'])
                 await roll_adv_dis(ctx, modifier, False)
-            case 'int_save':
+            case 'isave':
                 modifier = int(character['intelligence_save'])
                 await roll_adv_dis(ctx, modifier, False)
-            case 'wisdom_save':
+            case 'wsave':
                 modifier = int(character['wisdom_save'])
                 await roll_adv_dis(ctx, modifier, False)
-            case 'charisma_save':
+            case 'chsave':
                 modifier = int(character['charisma_save'])
                 await roll_adv_dis(ctx, modifier, False)
-            case 'sanity_save':
-                modifier = int(character['sanity_save'])
-                await roll_adv_dis(ctx, modifier, False)
-            case 'strength':
+            case 'str':
                 modifier = (int(character['strength']) - 10) // 2
                 await roll_adv_dis(ctx, modifier, False)
             case 'dex':
@@ -407,58 +418,53 @@ async def disadvantage(ctx, character_id, roll_type):
             case 'int':
                 modifier = (int(character['int']) - 10) // 2
                 await roll_adv_dis(ctx, modifier, False)
-            case 'wisdom':
+            case 'wis':
                 modifier = (int(character['wisdom']) - 10) // 2
                 await roll_adv_dis(ctx, modifier, False)
-            case 'charisma':
+            case 'char':
                 modifier = (int(character['charisma']) - 10) // 2
                 await roll_adv_dis(ctx, modifier, False)
-            case 'sanity':
-                modifier = (int(character['sanity']) - 10) // 2
-                await roll_adv_dis(ctx, modifier, False)
-            case 'acrobatics':
+            case 'acro':
                 await roll_adv_dis(ctx, character['acrobatics'], False)
-            case 'animal_handling':
+            case 'animal':
                 await roll_adv_dis(ctx, character['animal_handling'], False)
-            case 'arcana':
+            case 'arc':
                 await roll_adv_dis(ctx, character['arcana'], False)
-            case 'athletics':
+            case 'ath':
                 await roll_adv_dis(ctx, character['athletics'], False)
-            case 'deception':
+            case 'dec':
                 await roll_adv_dis(ctx, character['deception'], False)
-            case 'history':
+            case 'his':
                 await roll_adv_dis(ctx, character['history'], False)
-            case 'insight':
+            case 'ins':
                 await roll_adv_dis(ctx, character['insight'], False)
-            case 'intimidation':
+            case 'intimi':
                 await roll_adv_dis(ctx, character['intimidation'], False)
-            case 'investigation':
+            case 'inv':
                 await roll_adv_dis(ctx, character['investigation'], False)
-            case 'medicine':
+            case 'med':
                 await roll_adv_dis(ctx, character['medicine'], False)
-            case 'nature':
+            case 'nat':
                 await roll_adv_dis(ctx, character['nature'], False)
-            case 'perception':
+            case 'perc':
                 await roll_adv_dis(ctx, character['perception'], False)
-            case 'performance':
+            case 'perf':
                 await roll_adv_dis(ctx, character['performance'], False)
-            case 'persuasion':
+            case 'pers':
                 await roll_adv_dis(ctx, character['persuasion'], False)
-            case 'religion':
+            case 'rel':
                 await roll_adv_dis(ctx, character['religion'], False)
-            case 'slight_of_hand':
+            case 'soh':
                 await roll_adv_dis(ctx, character['slight_of_hand'], False)
             case 'stealth':
                 await roll_adv_dis(ctx, character['stealth'], False)
-            case 'survival':
+            case 'sur':
                 await roll_adv_dis(ctx, character['survival'], False)
-            case 'marshall':
-                await roll_adv_dis(ctx, character['marshall'], False)
             case _:
                 await ctx.send(
-                    "Types of saves/checks are: 'strength' 'dex_save' 'con_save' 'int_save' 'wisdom_save' 'charisma_save' 'sanity_save' 'strength' 'dex' 'con' 'int' 'wisdom' 'charisma' 'sanity' 'acrobatics' 'animal_handling' 'arcana' 'athletics' 'deception' 'history' 'insight' 'intimidation' 'investigation' 'medicine' 'nature' 'perception' 'performance' 'persuasion' 'religion' 'slight_of_hand' 'stealth' 'survival' 'marshall'")
+                    "Types of saves/checks are: 'strength' 'dex_save' 'con_save' 'int_save' 'wisdom_save' 'charisma_save' 'strength' 'dex' 'con' 'int' 'wisdom' 'charisma' 'sanity' 'acrobatics' 'animal_handling' 'arcana' 'athletics' 'deception' 'history' 'insight' 'intimidation' 'investigation' 'medicine' 'nature' 'perception' 'performance' 'persuasion' 'religion' 'slight_of_hand' 'stealth' 'survival'")
     else:
-        await ctx.send(f"No character found with ID: {character_id}")
+        await ctx.send(f"{user} does not have a current PC")
 
 
 async def roll_adv_dis(ctx, modifier, adv):
@@ -496,16 +502,17 @@ async def roll_check(ctx, check_type, modifier):
 
 
 @bot.command(brief="Rolls a saving throw.\nInput character id and type of saving throw")
-async def save(ctx, character_id, save_type):
-    if not character_id or not save_type:
+async def save(ctx, save_type):
+    user = ctx.message.author.name
+    if not save_type:
         await ctx.send("Please provide all required information: `[character_id] [type of save]`")
         return
 
-    character = character_collections.find_one({"_id": character_id})
+    character = await get_character(ctx)
     if character:
         await ctx.send(f"{character['name']}")
         match save_type:
-            case 'strength':
+            case 'str':
                 modifier = int(character['strength_save'])
                 await roll_check(ctx, 'strength save', modifier)
             case 'dex':
@@ -517,32 +524,30 @@ async def save(ctx, character_id, save_type):
             case 'int':
                 modifier = int(character['intelligence_save'])
                 await roll_check(ctx, 'intelligence save', modifier)
-            case 'wisdom':
+            case 'wis':
                 modifier = int(character['wisdom_save'])
                 await roll_check(ctx, 'wisdom save', modifier)
-            case 'charisma':
+            case 'char':
                 modifier = int(character['charisma_save'])
                 await roll_check(ctx, 'charisma save', modifier)
-            case 'sanity':
-                modifier = int(character['sanity_save'])
-                await roll_check(ctx, 'sanity save', modifier)
             case _:
-                await ctx.send("Types of save are: 'strength', 'dex', 'con', 'int', 'wisdom', 'charisma' or 'sanity'")
+                await ctx.send("Types of save are: 'strength', 'dex', 'con', 'int', 'wisdom', 'charisma'")
     else:
-        await ctx.send(f"No character found with ID: {character_id}")
+        await ctx.send(f"{user} does not have a current PC")
 
 
 @bot.command(brief="Rolls a check.\nInput character id and type of check")
-async def check(ctx, character_id, check_type):
-    if not character_id or not check_type:
+async def check(ctx, check_type):
+    user = ctx.message.author.name
+    if not check_type:
         await ctx.send("Please provide all required information: `[character_id] [type of check]`")
         return
 
-    character = character_collections.find_one({"_id": character_id})
+    character = await get_character(ctx)
     if character:
         await ctx.send(f"{character['name']}")
         match check_type:
-            case 'strength':
+            case 'str':
                 modifier = (int(character['strength']) - 10) // 2
                 await roll_check(ctx, 'strength', modifier)
             case 'dex':
@@ -554,57 +559,59 @@ async def check(ctx, character_id, check_type):
             case 'int':
                 modifier = (int(character['int']) - 10) // 2
                 await roll_check(ctx, 'intelligence', modifier)
-            case 'wisdom':
+            case 'wis':
                 modifier = (int(character['wisdom']) - 10) // 2
                 await roll_check(ctx, 'wisdom', modifier)
-            case 'charisma':
+            case 'char':
                 modifier = (int(character['charisma']) - 10) // 2
                 await roll_check(ctx, 'charisma', modifier)
-            case 'sanity':
-                modifier = (int(character['sanity']) - 10) // 2
-                await roll_check(ctx, 'sanity', modifier)
-            case 'acrobatics':
+            case 'acro':
                 await roll_check(ctx, 'acrobatics', character['acrobatics'])
-            case 'animal_handling':
+            case 'animal':
                 await roll_check(ctx, 'animal handling', character['animal_handling'])
-            case 'arcana':
+            case 'arc':
                 await roll_check(ctx, 'arcana', character['arcana'])
-            case 'athletics':
+            case 'ath':
                 await roll_check(ctx, 'athletics', character['athletics'])
-            case 'deception':
+            case 'dec':
                 await roll_check(ctx, 'deception', character['deception'])
-            case 'history':
+            case 'his':
                 await roll_check(ctx, 'history', character['history'])
-            case 'insight':
+            case 'ins':
                 await roll_check(ctx, 'insight', character['insight'])
-            case 'intimidation':
+            case 'intimi':
                 await roll_check(ctx, 'intimidation', character['intimidation'])
-            case 'investigation':
+            case 'inv':
                 await roll_check(ctx, 'investigation', character['investigation'])
-            case 'medicine':
+            case 'med':
                 await roll_check(ctx, 'medicine', character['medicine'])
-            case 'nature':
+            case 'nat':
                 await roll_check(ctx, 'nature', character['nature'])
-            case 'perception':
+            case 'perc':
                 await roll_check(ctx, 'perception', character['perception'])
-            case 'performance':
+            case 'perf':
                 await roll_check(ctx, 'performance', character['performance'])
-            case 'persuasion':
+            case 'pers':
                 await roll_check(ctx, 'persuasion', character['persuasion'])
-            case 'religion':
+            case 'rel':
                 await roll_check(ctx, 'religion', character['religion'])
-            case 'slight_of_hand':
+            case 'soh':
                 await roll_check(ctx, 'slight of hand', character['slight_of_hand'])
             case 'stealth':
                 await roll_check(ctx, 'stealth', character['stealth'])
-            case 'survival':
+            case 'sur':
                 await roll_check(ctx, 'survival', character['survival'])
-            case 'marshall':
-                await roll_check(ctx, 'marshall', character['marshall'])
             case _:
-                await ctx.send("Types of checks are: 'strength' 'dex' 'con' 'int' 'wisdom' 'charisma' 'sanity' 'acrobatics' 'animal_handling' 'arcana' 'athletics' 'deception' 'history' 'insight' 'intimidation' 'investigation' 'medicine' 'nature' 'perception' 'performance' 'persuasion' 'religion' 'slight_of_hand' 'stealth' 'survival' 'marshall'")
+                await ctx.send("Types of checks are: 'strength' 'dex' 'con' 'int' 'wisdom' 'charisma' 'acrobatics' 'animal_handling' 'arcana' 'athletics' 'deception' 'history' 'insight' 'intimidation' 'investigation' 'medicine' 'nature' 'perception' 'performance' 'persuasion' 'religion' 'slight_of_hand' 'stealth' 'survival'")
     else:
-        await ctx.send(f"No character found with ID: {character_id}")
+        await ctx.send(f"{user} does not have a current PC")
+
+@bot.command(brief="For CRAIG only")
+async def newcampaign(ctx, password):
+    if password != "!Dragons2004":
+        await ctx.send("No deleting stuff for you")
+    else:
+        character_collections.delete_many({})
 
 
-bot.run('bot token goes here')
+bot.run('discord token goes here')
