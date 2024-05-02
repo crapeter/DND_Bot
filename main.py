@@ -22,9 +22,9 @@ async def on_ready():
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
-    roll_or_die = bot.get_channel(1171843834699845632)
-    if roll_or_die:
-        await roll_or_die.send("Your God has awakened")
+    # roll_or_die = bot.get_channel(1171843834699845632)
+    # if roll_or_die:
+        # await roll_or_die.send("Your God has awakened")
 
 
 @bot.command()
@@ -228,6 +228,32 @@ async def roll(ctx, dice_value, bonus_dmg=0):
         if rolls[0] == 1:
             await ctx.send("Your God has chosen to smite you")
     await ctx.send(f"Rolling {dice_value}: {', '.join(map(str, rolls))}.\nTotal: {total_roll + int(bonus_dmg)}")
+
+
+@bot.command(brief="Roll for the number of attacks in one turn + modifier + if you have advantage (greater than 0 for adv, less than 0 for disadv)\nInput ex\n\tAdvantage: 8d20 16 1\n\tStraight: 2d20 15\n\tStraight: 2d20 15 -1")
+async def ratk(ctx, dice_value, bonus=0, adv=0):
+    match = re.match(r'^(\d+)d(\d+)$', dice_value)
+    if not match:
+        await ctx.send("Invalid roll format. Use [number]d[sides]")
+        return
+    num_dice = int(match.group(1))
+    num_sides = int(match.group(2))
+
+    if num_dice < 1 or num_sides < 2:
+        await ctx.send("Invalid dice config. Number of dice must be positive and sides must be greater than 2")
+        return
+
+    first_rolls = [random.randint(1, num_sides) for _ in range(num_dice)]
+    second_rolls = [random.randint(1, num_sides) for _ in range(num_dice)]
+    if adv > 0:
+        final_rolls = [max(roll1, roll2) + 16 for roll1, roll2 in zip(first_rolls, second_rolls)]
+        await ctx.send(f"First Set of Rolls:\t\t {first_rolls}\nSecond Set of Rolls:\t{second_rolls}\nFinal Rolls with bonuses:\t{final_rolls}")
+    elif adv < 0:
+        final_rolls = [min(roll1, roll2) + 16 for roll1, roll2 in zip(first_rolls, second_rolls)]
+        await ctx.send(f"First Set of Rolls:\t\t {first_rolls}\nSecond Set of Rolls:\t{second_rolls}\nFinal Rolls with bonuses:\t{final_rolls}")
+    else:
+        final_rolls = [idx + bonus for idx in first_rolls]
+        await ctx.send(f"Initial Rolls:\t {first_rolls}\nFinal Rolls with bonuses:\t {final_rolls}")
 
 
 @bot.command(brief="Input: plus to hit\nIf no bonus to hit, don't put anything")
@@ -581,4 +607,4 @@ async def check(ctx, character_id, check_type):
         await ctx.send(f"No character found with ID: {character_id}")
 
 
-bot.run('//bot_token_here')
+bot.run('bot token goes here')
