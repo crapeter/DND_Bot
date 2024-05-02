@@ -606,9 +606,9 @@ async def check(ctx, check_type):
     else:
         await ctx.send(f"{user} does not have a current PC")
 
-@bot.command(brief="For CRAIG only")
+@bot.command(brief="For MAINTAINER/BOT OPERATOR only")
 async def newcampaign(ctx, password):
-    if password != "!Dragons2004":
+    if password != "random text goes here":
         await ctx.send("No deleting stuff for you")
     else:
         character_collections.delete_many({})
