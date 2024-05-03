@@ -28,12 +28,23 @@ async def on_ready():
 
 @bot.command()
 async def cheatsheet(ctx):
+    set_list = []
+    save_list = []
     command_list = []
     for command in bot.commands:
         if command.brief:
-            command_list.append(f"**{command.name}**: {command.brief}")
-    help_message = "\n\n".join(command_list)
-    await ctx.send(f"Available commands:\n{help_message}")
+            if "save" in command.brief:
+                save_list.append(f"**{command.name}**: {command.brief}")
+            elif "Sets" in command.brief:
+                set_list.append(f"**{command.name}**: {command.brief}")
+            else:
+                command_list.append(f"**{command.name}**: {command.brief}")
+    set_message = "\n".join(set_list)
+    save_message = "\n".join(save_list)
+    help_message = "\n".join(command_list)
+    await ctx.send(f"**Available set commands:**\n{set_message}")
+    await ctx.send(f"**Available set-save commands:**\n{save_message}")
+    await ctx.send(f"**Other commands:**\n{help_message}")
 
 
 @bot.command(brief="Creates a character\nInputs: name")
@@ -79,19 +90,54 @@ async def createcharacter(ctx, name):
     character_collections.insert_one(character_data)
     await ctx.send(f"{name} has been created")
 
+def save_player_data(player_data):
+    with open("player_data.json", 'w') as file:
+        json.dump(player_data, file)
+
+def load_player_data():
+    try:
+        with open('player_data.json', 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+
+player_data = load_player_data()
+
+@bot.command(brief="Switches to the character you want to play as")
+async def switch(ctx, name):
+    user = ctx.message.author.name
+
+    match user:
+        case ".helevete":
+            player_data[user] = name
+            await ctx.send(f"Craig switched to {name}")
+        case ".zanep7":
+            player_data[user] = name
+            await ctx.send(f"Zach switched to {name}")
+        case ".wildscarab":
+            player_data[user] = name
+            await ctx.send(f"Jack switched to {name}")
+        case ".frojackson":
+            player_data[user] = name
+            await ctx.send(f"Jackson switched to {name}")
+        case _:
+            return
+
+    save_player_data(player_data)
+
 
 async def get_character(ctx):
     user = ctx.message.author.name
 
     match user:
-        case "discord name":
-            character = character_collections.find_one({"name": "Zaeed"})
-        case "discord name":
-            character = character_collections.find_one({"name": "Takahiro"})
-        case "discord name":
-            character = character_collections.find_one({"name": "Corvix"})
-        case "discord name":
-            character = character_collections.find_one({"name": "DM"})
+        case ".helevete":
+            character = character_collections.find_one({"name": player_data.get(user)})
+        case ".zanep7":
+            character = character_collections.find_one({"name": player_data.get(user)})
+        case ".wildscarab":
+            character = character_collections.find_one({"name": player_data.get(user)})
+        case ".frojackson":
+            character = character_collections.find_one({"name": player_data.get(user)})
         case _:
             return
 
