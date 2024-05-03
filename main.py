@@ -108,18 +108,18 @@ async def switch(ctx, name):
     user = ctx.message.author.name
 
     match user:
-        case ".helevete":
+        case "discord name":
             player_data[user] = name
-            await ctx.send(f"Craig switched to {name}")
-        case ".zanep7":
+            await ctx.send(f"Human name switched to {name}")
+        case "discord name":
             player_data[user] = name
-            await ctx.send(f"Zach switched to {name}")
-        case ".wildscarab":
+            await ctx.send(f"Human name switched to {name}")
+        case "discord name":
             player_data[user] = name
-            await ctx.send(f"Jack switched to {name}")
-        case ".frojackson":
+            await ctx.send(f"Human name switched to {name}")
+        case "discord name":
             player_data[user] = name
-            await ctx.send(f"Jackson switched to {name}")
+            await ctx.send(f"Human name switched to {name}")
         case _:
             return
 
@@ -130,13 +130,13 @@ async def get_character(ctx):
     user = ctx.message.author.name
 
     match user:
-        case ".helevete":
+        case "discord name":
             character = character_collections.find_one({"name": player_data.get(user)})
-        case ".zanep7":
+        case "discord name":
             character = character_collections.find_one({"name": player_data.get(user)})
-        case ".wildscarab":
+        case "discord name":
             character = character_collections.find_one({"name": player_data.get(user)})
-        case ".frojackson":
+        case "discord name":
             character = character_collections.find_one({"name": player_data.get(user)})
         case _:
             return
