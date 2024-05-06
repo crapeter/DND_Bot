@@ -16,11 +16,6 @@ character_collections = db.Characters
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
-
-
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user.name}')
     # roll_or_die = bot.get_channel(discord channel id)
     # if roll_or_die:
         # await roll_or_die.send("Your God has awakened")
