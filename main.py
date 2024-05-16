@@ -92,6 +92,7 @@ async def othercommands(ctx):
 async def createcharacter(ctx, name):
     if not name:
         await ctx.send("Please give your character a name")
+        return
 
     character = character_collections.find_one({"name": name})
     if character:
