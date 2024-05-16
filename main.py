@@ -9,7 +9,7 @@ import json
 bot = commands.Bot(command_prefix='/', intents=discord.Intents.all())
 
 client = pymongo.MongoClient(
-    "mongodb+srv://<username>:<password>@cluster0.pb7fxj4.mongodb.net/?retryWrites=true&w=majority"
+    "Insert you mongoDB connection here"
 )
 db = client.DND
 character_collections = db.Characters
@@ -553,9 +553,9 @@ async def stealthcheck(ctx, adv=0):
 async def surcheck(ctx, adv=0):
     await rollstats(ctx, 'survival', adv)
 
-@bot.command(brief="For CRAIG only")
+@bot.command(brief="For the person who is running the bot/the person who owns the DB only")
 async def newcampaign(ctx, password):
-    if password != "!Dragons2004":
+    if password != "password goes here":
         await ctx.send("No deleting stuff for you")
     else:
         character_collections.delete_many({})
