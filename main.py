@@ -405,6 +405,7 @@ async def rollstats(ctx, dc_type, adv=0):
     base_stats = ['strength', 'dex', 'con', 'int', 'wisdom', 'charisma']
     character = await get_character(ctx)
     if character:
+        await ctx.send(f"Roll for: {character['name']}")
         if dc_type in base_stats:
             modifier = (int(character[dc_type]) - 10) // 2
         else:
