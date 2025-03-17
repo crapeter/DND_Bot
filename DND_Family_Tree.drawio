@@ -367,7 +367,7 @@
             <mxPoint x="860" y="470" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="hPd7pWXpVeVF4-XowLYw-96" value="&lt;div&gt;Male&lt;/div&gt;&lt;div&gt;Stoneheart&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;align=center;" parent="1" vertex="1">
+        <mxCell id="hPd7pWXpVeVF4-XowLYw-96" value="&lt;div&gt;Rurik Stoneheart&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;align=center;" parent="1" vertex="1">
           <mxGeometry y="520" width="120" height="120" as="geometry" />
         </mxCell>
         <mxCell id="hPd7pWXpVeVF4-XowLYw-97" value="" style="endArrow=none;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="1" source="hPd7pWXpVeVF4-XowLYw-96" edge="1">
